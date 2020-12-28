@@ -75,15 +75,23 @@ const Children = {
 };
 
 export {
+  Component,
+  PureComponent,
+
+  createElement,
+  cloneElement,
+  isValidElement,
+  // Deprecated behind disableCreateFactory
+  createFactory,
+
   Children,
   createMutableSource,
   createRef,
-  Component,
-  PureComponent,
   createContext,
   forwardRef,
   lazy,
   memo,
+
   useCallback,
   useContext,
   useEffect,
@@ -95,18 +103,15 @@ export {
   useReducer,
   useRef,
   useState,
+
   REACT_FRAGMENT_TYPE as Fragment,
   REACT_PROFILER_TYPE as Profiler,
   REACT_STRICT_MODE_TYPE as StrictMode,
   REACT_DEBUG_TRACING_MODE_TYPE as unstable_DebugTracingMode,
   REACT_SUSPENSE_TYPE as Suspense,
-  createElement,
-  cloneElement,
-  isValidElement,
+
   ReactVersion as version,
   ReactSharedInternals as __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED,
-  // Deprecated behind disableCreateFactory
-  createFactory,
   // Concurrent Mode
   useTransition,
   startTransition,
