@@ -7,14 +7,14 @@
  * @flow
  */
 
-import type {Fiber} from './ReactInternalTypes';
+import type { Fiber } from './ReactInternalTypes';
 
 import {
   enableProfilerCommitHooks,
   enableProfilerNestedUpdatePhase,
-  enableProfilerTimer,
+  enableProfilerTimer
 } from 'shared/ReactFeatureFlags';
-import {Profiler} from './ReactWorkTags';
+import { Profiler } from './ReactWorkTags';
 
 // Intentionally not named imports because Rollup would use dynamic dispatch for
 // CommonJS interop named imports.
@@ -112,10 +112,7 @@ function stopProfilerTimerIfRunning(fiber: Fiber): void {
   profilerStartTime = -1;
 }
 
-function stopProfilerTimerIfRunningAndRecordDelta(
-  fiber: Fiber,
-  overrideBaseTime: boolean,
-): void {
+function stopProfilerTimerIfRunningAndRecordDelta(fiber: Fiber, overrideBaseTime: boolean): void {
   if (!enableProfilerTimer) {
     return;
   }
@@ -220,5 +217,5 @@ export {
   stopProfilerTimerIfRunning,
   stopProfilerTimerIfRunningAndRecordDelta,
   syncNestedUpdateFlag,
-  transferActualDuration,
+  transferActualDuration
 };

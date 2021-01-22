@@ -84,29 +84,29 @@
 // regardless of priority. Intermediate state may vary according to system
 // resources, but the final state is always the same.
 
-import type {Fiber} from './ReactInternalTypes';
-import type {Lanes, Lane} from './ReactFiberLane.old';
+import type { Fiber } from './ReactInternalTypes';
+import type { Lanes, Lane } from './ReactFiberLane.old';
 
 import {
   NoLane,
   NoLanes,
   isSubsetOfLanes,
-  mergeLanes,
+  mergeLanes
 } from './ReactFiberLane.old';
 import {
   enterDisallowedContextReadInDEV,
-  exitDisallowedContextReadInDEV,
+  exitDisallowedContextReadInDEV
 } from './ReactFiberNewContext.old';
-import {Callback, ShouldCapture, DidCapture} from './ReactFiberFlags';
+import { Callback, ShouldCapture, DidCapture } from './ReactFiberFlags';
 
-import {debugRenderPhaseSideEffectsForStrictMode} from 'shared/ReactFeatureFlags';
+import { debugRenderPhaseSideEffectsForStrictMode } from 'shared/ReactFeatureFlags';
 
-import {StrictMode} from './ReactTypeOfMode';
-import {markSkippedUpdateLanes} from './ReactFiberWorkLoop.old';
+import { StrictMode } from './ReactTypeOfMode';
+import { markSkippedUpdateLanes } from './ReactFiberWorkLoop.old';
 
 import invariant from 'shared/invariant';
 
-import {disableLogs, reenableLogs} from 'shared/ConsolePatchingDev';
+import { disableLogs, reenableLogs } from 'shared/ConsolePatchingDev';
 
 export type Update<State> = {|
   // TODO: Temporary field. Will remove this by storing a map of
@@ -160,16 +160,16 @@ export function initializeUpdateQueue<State>(fiber: Fiber): void {
     firstBaseUpdate: null,
     lastBaseUpdate: null,
     shared: {
-      pending: null,
+      pending: null
     },
-    effects: null,
+    effects: null
   };
   fiber.updateQueue = queue;
 }
 
 export function cloneUpdateQueue<State>(
   current: Fiber,
-  workInProgress: Fiber,
+  workInProgress: Fiber
 ): void {
   // Clone the update queue from current. Unless it's already a clone.
   const queue: UpdateQueue<State> = (workInProgress.updateQueue: any);
@@ -180,7 +180,7 @@ export function cloneUpdateQueue<State>(
       firstBaseUpdate: currentQueue.firstBaseUpdate,
       lastBaseUpdate: currentQueue.lastBaseUpdate,
       shared: currentQueue.shared,
-      effects: currentQueue.effects,
+      effects: currentQueue.effects
     };
     workInProgress.updateQueue = clone;
   }
@@ -195,11 +195,13 @@ export function createUpdate(eventTime: number, lane: Lane): Update<*> {
     payload: null,
     callback: null,
 
-    next: null,
+    next: null
   };
   return update;
 }
 
+// fiber: FiberNode
+// update: {callback: null, eventTime: 60361.959999994724, lane: 1, next: null, payload: {element: {…}}, tag: 0}
 export function enqueueUpdate<State>(fiber: Fiber, update: Update<State>) {
   const updateQueue = fiber.updateQueue;
   if (updateQueue === null) {
@@ -207,8 +209,8 @@ export function enqueueUpdate<State>(fiber: Fiber, update: Update<State>) {
     return;
   }
 
-  const sharedQueue: SharedQueue<State> = (updateQueue: any).shared;
-  const pending = sharedQueue.pending;
+  const sharedQueue: SharedQueue<State> = (updateQueue: any).shared; // {pending: null}
+  const pending = sharedQueue.pending; // null
   if (pending === null) {
     // This is the first update. Create a circular list.
     update.next = update;
@@ -219,15 +221,12 @@ export function enqueueUpdate<State>(fiber: Fiber, update: Update<State>) {
   sharedQueue.pending = update;
 
   if (__DEV__) {
-    if (
-      currentlyProcessingQueue === sharedQueue &&
-      !didWarnUpdateInsideUpdate
-    ) {
+    if (currentlyProcessingQueue === sharedQueue && !didWarnUpdateInsideUpdate) {
       console.error(
         'An update (setState, replaceState, or forceUpdate) was scheduled ' +
-          'from inside an update function. Update functions should be pure, ' +
-          'with zero side-effects. Consider using componentDidUpdate or a ' +
-          'callback.',
+        'from inside an update function. Update functions should be pure, ' +
+        'with zero side-effects. Consider using componentDidUpdate or a ' +
+        'callback.'
       );
       didWarnUpdateInsideUpdate = true;
     }
@@ -236,7 +235,7 @@ export function enqueueUpdate<State>(fiber: Fiber, update: Update<State>) {
 
 export function enqueueCapturedUpdate<State>(
   workInProgress: Fiber,
-  capturedUpdate: Update<State>,
+  capturedUpdate: Update<State>
 ) {
   // Captured updates are updates that are thrown by a child during the render
   // phase. They should be discarded if the render is aborted. Therefore,
@@ -269,7 +268,7 @@ export function enqueueCapturedUpdate<State>(
             payload: update.payload,
             callback: update.callback,
 
-            next: null,
+            next: null
           };
           if (newLast === null) {
             newFirst = newLast = clone;
@@ -296,7 +295,7 @@ export function enqueueCapturedUpdate<State>(
         firstBaseUpdate: newFirst,
         lastBaseUpdate: newLast,
         shared: currentQueue.shared,
-        effects: currentQueue.effects,
+        effects: currentQueue.effects
       };
       workInProgress.updateQueue = queue;
       return;
@@ -319,7 +318,7 @@ function getStateFromUpdate<State>(
   update: Update<State>,
   prevState: State,
   nextProps: any,
-  instance: any,
+  instance: any
 ): any {
   switch (update.tag) {
     case ReplaceState: {
@@ -396,12 +395,9 @@ function getStateFromUpdate<State>(
   return prevState;
 }
 
-export function processUpdateQueue<State>(
-  workInProgress: Fiber,
-  props: any,
-  instance: any,
-  renderLanes: Lanes,
-): void {
+export function processUpdateQueue<State>(workInProgress: Fiber, props: any, instance: any, renderLanes: Lanes): void {
+  console.log('processUpdateQueue');
+  debugger;
   // This is always non-null on a ClassComponent or HostRoot
   const queue: UpdateQueue<State> = (workInProgress.updateQueue: any);
 
@@ -481,7 +477,7 @@ export function processUpdateQueue<State>(
           payload: update.payload,
           callback: update.callback,
 
-          next: null,
+          next: null
         };
         if (newLastBaseUpdate === null) {
           newFirstBaseUpdate = newLastBaseUpdate = clone;
@@ -506,7 +502,7 @@ export function processUpdateQueue<State>(
             payload: update.payload,
             callback: update.callback,
 
-            next: null,
+            next: null
           };
           newLastBaseUpdate = newLastBaseUpdate.next = clone;
         }
@@ -518,7 +514,7 @@ export function processUpdateQueue<State>(
           update,
           newState,
           props,
-          instance,
+          instance
         );
         const callback = update.callback;
         if (callback !== null) {
@@ -534,6 +530,8 @@ export function processUpdateQueue<State>(
       update = update.next;
       if (update === null) {
         pendingQueue = queue.shared.pending;
+        console.log('pendingQueue -> ', pendingQueue);
+        debugger;
         if (pendingQueue === null) {
           break;
         } else {
@@ -580,8 +578,8 @@ function callCallback(callback, context) {
   invariant(
     typeof callback === 'function',
     'Invalid argument passed as callback. Expected a function. Instead ' +
-      'received: %s',
-    callback,
+    'received: %s',
+    callback
   );
   callback.call(context);
 }
@@ -597,7 +595,7 @@ export function checkHasForceUpdateAfterProcessing(): boolean {
 export function commitUpdateQueue<State>(
   finishedWork: Fiber,
   finishedQueue: UpdateQueue<State>,
-  instance: any,
+  instance: any
 ): void {
   // Commit the effects
   const effects = finishedQueue.effects;

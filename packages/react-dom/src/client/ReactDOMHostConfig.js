@@ -7,16 +7,16 @@
  * @flow
  */
 
-import type {DOMEventName} from '../events/DOMEventNames';
-import type {Fiber, FiberRoot} from 'react-reconciler/src/ReactInternalTypes';
+import type { DOMEventName } from '../events/DOMEventNames';
+import type { Fiber, FiberRoot } from 'react-reconciler/src/ReactInternalTypes';
 import type {
   BoundingRect,
   IntersectionObserverOptions,
-  ObserveVisibleRectsCallback,
+  ObserveVisibleRectsCallback
 } from 'react-reconciler/src/ReactTestSelectors';
-import type {RootType} from './ReactDOMRoot';
-import type {ReactScopeInstance} from 'shared/ReactTypes';
-import type {ReactDOMFundamentalComponentInstance} from '../shared/ReactDOMTypes';
+import type { RootType } from './ReactDOMRoot';
+import type { ReactScopeInstance } from 'shared/ReactTypes';
+import type { ReactDOMFundamentalComponentInstance } from '../shared/ReactDOMTypes';
 
 import {
   precacheFiberNode,
@@ -24,9 +24,9 @@ import {
   getClosestInstanceFromNode,
   getFiberFromScopeInstance,
   getInstanceFromNode as getInstanceFromNodeDOMTree,
-  isContainerMarkedAsRoot,
+  isContainerMarkedAsRoot
 } from './ReactDOMComponentTree';
-import {hasRole} from './DOMAccessibilityRoles';
+import { hasRole } from './DOMAccessibilityRoles';
 import {
   createElement,
   createTextNode,
@@ -40,36 +40,39 @@ import {
   warnForDeletedHydratableElement,
   warnForDeletedHydratableText,
   warnForInsertedHydratedElement,
-  warnForInsertedHydratedText,
+  warnForInsertedHydratedText
 } from './ReactDOMComponent';
-import {getSelectionInformation, restoreSelection} from './ReactInputSelection';
+import {
+  getSelectionInformation,
+  restoreSelection
+} from './ReactInputSelection';
 import setTextContent from './setTextContent';
-import {validateDOMNesting, updatedAncestorInfo} from './validateDOMNesting';
+import { validateDOMNesting, updatedAncestorInfo } from './validateDOMNesting';
 import {
   isEnabled as ReactBrowserEventEmitterIsEnabled,
-  setEnabled as ReactBrowserEventEmitterSetEnabled,
+  setEnabled as ReactBrowserEventEmitterSetEnabled
 } from '../events/ReactDOMEventListener';
-import {getChildNamespace} from '../shared/DOMNamespaces';
+import { getChildNamespace } from '../shared/DOMNamespaces';
 import {
   ELEMENT_NODE,
   TEXT_NODE,
   COMMENT_NODE,
   DOCUMENT_NODE,
-  DOCUMENT_FRAGMENT_NODE,
+  DOCUMENT_FRAGMENT_NODE
 } from '../shared/HTMLNodeType';
 import dangerousStyleValue from '../shared/dangerousStyleValue';
 
-import {REACT_OPAQUE_ID_TYPE} from 'shared/ReactSymbols';
-import {retryIfBlockedOn} from '../events/ReactDOMEventReplaying';
+import { REACT_OPAQUE_ID_TYPE } from 'shared/ReactSymbols';
+import { retryIfBlockedOn } from '../events/ReactDOMEventReplaying';
 
 import {
   enableSuspenseServerRenderer,
   enableFundamentalAPI,
   enableCreateEventHandleAPI,
-  enableScopeAPI,
+  enableScopeAPI
 } from 'shared/ReactFeatureFlags';
-import {HostComponent, HostText} from 'react-reconciler/src/ReactWorkTags';
-import {listenToAllSupportedEvents} from '../events/DOMPluginEventSystem';
+import { HostComponent, HostText } from 'react-reconciler/src/ReactWorkTags';
+import { listenToAllSupportedEvents } from '../events/DOMPluginEventSystem';
 
 export type Type = string;
 export type Props = {
@@ -79,7 +82,7 @@ export type Props = {
   hidden?: boolean,
   suppressHydrationWarning?: boolean,
   dangerouslySetInnerHTML?: mixed,
-  style?: {display?: string, ...},
+  style?: { display?: string, ... },
   bottom?: null | number,
   left?: null | number,
   right?: null | number,
@@ -103,11 +106,11 @@ export type EventTargetChildElement = {
   ...
 };
 export type Container =
-  | (Element & {_reactRootContainer?: RootType, ...})
-  | (Document & {_reactRootContainer?: RootType, ...});
+  | (Element & { _reactRootContainer?: RootType, ... })
+  | (Document & { _reactRootContainer?: RootType, ... });
 export type Instance = Element;
 export type TextInstance = Text;
-export type SuspenseInstance = Comment & {_reactRetry?: () => void, ...};
+export type SuspenseInstance = Comment & { _reactRetry?: () => void, ... };
 export type HydratableInstance = Instance | TextInstance | SuspenseInstance;
 export type PublicInstance = Element | Text;
 type HostContextDev = {
@@ -126,9 +129,9 @@ export type RendererInspectionConfig = $ReadOnly<{||}>;
 export opaque type OpaqueIDType =
   | string
   | {
-      toString: () => string | void,
-      valueOf: () => string | void,
-    };
+  toString: () => string | void,
+  valueOf: () => string | void,
+};
 
 type SelectionInformation = {|
   focusedElem: null | HTMLElement,
@@ -164,7 +167,7 @@ function shouldAutoFocusHostComponent(type: string, props: Props): boolean {
 export * from 'react-reconciler/src/ReactFiberHostConfigWithNoPersistence';
 
 export function getRootHostContext(
-  rootContainerInstance: Container,
+  rootContainerInstance: Container
 ): HostContext {
   let type;
   let namespace;
@@ -199,14 +202,14 @@ export function getRootHostContext(
 export function getChildHostContext(
   parentHostContext: HostContext,
   type: string,
-  rootContainerInstance: Container,
+  rootContainerInstance: Container
 ): HostContext {
   if (__DEV__) {
     const parentHostContextDev = ((parentHostContext: any): HostContextDev);
     const namespace = getChildNamespace(parentHostContextDev.namespace, type);
     const ancestorInfo = updatedAncestorInfo(
       parentHostContextDev.ancestorInfo,
-      type,
+      type
     );
     return {namespace, ancestorInfo};
   }
@@ -237,7 +240,7 @@ export function beforeActiveInstanceBlur(internalInstanceHandle: Object): void {
     ReactBrowserEventEmitterSetEnabled(true);
     dispatchBeforeDetachedBlur(
       (selectionInformation: any).focusedElem,
-      internalInstanceHandle,
+      internalInstanceHandle
     );
     ReactBrowserEventEmitterSetEnabled(false);
   }
@@ -258,13 +261,8 @@ export function resetAfterCommit(containerInfo: Container): void {
   selectionInformation = null;
 }
 
-export function createInstance(
-  type: string,
-  props: Props,
-  rootContainerInstance: Container,
-  hostContext: HostContext,
-  internalInstanceHandle: Object,
-): Instance {
+export function createInstance(type: string, props: Props, rootContainerInstance: Container, hostContext: HostContext, internalInstanceHandle: Object): Instance {
+  debugger;
   let parentNamespace: string;
   if (__DEV__) {
     // TODO: take namespace into account when validating.
@@ -277,7 +275,7 @@ export function createInstance(
       const string = '' + props.children;
       const ownAncestorInfo = updatedAncestorInfo(
         hostContextDev.ancestorInfo,
-        type,
+        type
       );
       validateDOMNesting(null, string, ownAncestorInfo);
     }
@@ -285,12 +283,7 @@ export function createInstance(
   } else {
     parentNamespace = ((hostContext: any): HostContextProd);
   }
-  const domElement: Instance = createElement(
-    type,
-    props,
-    rootContainerInstance,
-    parentNamespace,
-  );
+  const domElement: Instance = createElement(type, props, rootContainerInstance, parentNamespace);
   precacheFiberNode(internalInstanceHandle, domElement);
   updateFiberProps(domElement, props);
   return domElement;
@@ -298,7 +291,7 @@ export function createInstance(
 
 export function appendInitialChild(
   parentInstance: Instance,
-  child: Instance | TextInstance,
+  child: Instance | TextInstance
 ): void {
   parentInstance.appendChild(child);
 }
@@ -308,7 +301,7 @@ export function finalizeInitialChildren(
   type: string,
   props: Props,
   rootContainerInstance: Container,
-  hostContext: HostContext,
+  hostContext: HostContext
 ): boolean {
   setInitialProperties(domElement, type, props, rootContainerInstance);
   return shouldAutoFocusHostComponent(type, props);
@@ -320,7 +313,7 @@ export function prepareUpdate(
   oldProps: Props,
   newProps: Props,
   rootContainerInstance: Container,
-  hostContext: HostContext,
+  hostContext: HostContext
 ): null | Array<mixed> {
   if (__DEV__) {
     const hostContextDev = ((hostContext: any): HostContextDev);
@@ -332,7 +325,7 @@ export function prepareUpdate(
       const string = '' + newProps.children;
       const ownAncestorInfo = updatedAncestorInfo(
         hostContextDev.ancestorInfo,
-        type,
+        type
       );
       validateDOMNesting(null, string, ownAncestorInfo);
     }
@@ -342,7 +335,7 @@ export function prepareUpdate(
     type,
     oldProps,
     newProps,
-    rootContainerInstance,
+    rootContainerInstance
   );
 }
 
@@ -363,7 +356,7 @@ export function createTextInstance(
   text: string,
   rootContainerInstance: Container,
   hostContext: HostContext,
-  internalInstanceHandle: Object,
+  internalInstanceHandle: Object
 ): TextInstance {
   if (__DEV__) {
     const hostContextDev = ((hostContext: any): HostContextDev);
@@ -395,7 +388,7 @@ export function commitMount(
   domElement: Instance,
   type: string,
   newProps: Props,
-  internalInstanceHandle: Object,
+  internalInstanceHandle: Object
 ): void {
   // Despite the naming that might imply otherwise, this method only
   // fires if there is an `Update` effect scheduled during mounting.
@@ -418,7 +411,7 @@ export function commitUpdate(
   type: string,
   oldProps: Props,
   newProps: Props,
-  internalInstanceHandle: Object,
+  internalInstanceHandle: Object
 ): void {
   // Update the props handle so that we know which props are the ones with
   // with current event handlers.
@@ -434,22 +427,20 @@ export function resetTextContent(domElement: Instance): void {
 export function commitTextUpdate(
   textInstance: TextInstance,
   oldText: string,
-  newText: string,
+  newText: string
 ): void {
   textInstance.nodeValue = newText;
 }
 
 export function appendChild(
   parentInstance: Instance,
-  child: Instance | TextInstance,
+  child: Instance | TextInstance
 ): void {
   parentInstance.appendChild(child);
 }
 
-export function appendChildToContainer(
-  container: Container,
-  child: Instance | TextInstance,
-): void {
+export function appendChildToContainer(container: Container, child: Instance | TextInstance): void {
+  debugger;
   let parentNode;
   if (container.nodeType === COMMENT_NODE) {
     parentNode = (container.parentNode: any);
@@ -467,10 +458,7 @@ export function appendChildToContainer(
   // defined.
   // https://github.com/facebook/react/issues/11918
   const reactRootContainer = container._reactRootContainer;
-  if (
-    (reactRootContainer === null || reactRootContainer === undefined) &&
-    parentNode.onclick === null
-  ) {
+  if ((reactRootContainer === null || reactRootContainer === undefined) && parentNode.onclick === null) {
     // TODO: This cast may not be sound for SVG, MathML or custom elements.
     trapClickOnNonInteractiveElement(((parentNode: any): HTMLElement));
   }
@@ -479,7 +467,7 @@ export function appendChildToContainer(
 export function insertBefore(
   parentInstance: Instance,
   child: Instance | TextInstance,
-  beforeChild: Instance | TextInstance | SuspenseInstance,
+  beforeChild: Instance | TextInstance | SuspenseInstance
 ): void {
   parentInstance.insertBefore(child, beforeChild);
 }
@@ -487,7 +475,7 @@ export function insertBefore(
 export function insertInContainerBefore(
   container: Container,
   child: Instance | TextInstance,
-  beforeChild: Instance | TextInstance | SuspenseInstance,
+  beforeChild: Instance | TextInstance | SuspenseInstance
 ): void {
   if (container.nodeType === COMMENT_NODE) {
     (container.parentNode: any).insertBefore(child, beforeChild);
@@ -504,7 +492,7 @@ function createEvent(type: DOMEventName, bubbles: boolean): Event {
 
 function dispatchBeforeDetachedBlur(
   target: HTMLElement,
-  internalInstanceHandle: Object,
+  internalInstanceHandle: Object
 ): void {
   if (enableCreateEventHandleAPI) {
     const event = createEvent('beforeblur', true);
@@ -530,14 +518,14 @@ function dispatchAfterDetachedBlur(target: HTMLElement): void {
 
 export function removeChild(
   parentInstance: Instance,
-  child: Instance | TextInstance | SuspenseInstance,
+  child: Instance | TextInstance | SuspenseInstance
 ): void {
   parentInstance.removeChild(child);
 }
 
 export function removeChildFromContainer(
   container: Container,
-  child: Instance | TextInstance | SuspenseInstance,
+  child: Instance | TextInstance | SuspenseInstance
 ): void {
   if (container.nodeType === COMMENT_NODE) {
     (container.parentNode: any).removeChild(child);
@@ -548,7 +536,7 @@ export function removeChildFromContainer(
 
 export function clearSuspenseBoundary(
   parentInstance: Instance,
-  suspenseInstance: SuspenseInstance,
+  suspenseInstance: SuspenseInstance
 ): void {
   let node = suspenseInstance;
   // Delete all nodes within this suspense boundary.
@@ -586,7 +574,7 @@ export function clearSuspenseBoundary(
 
 export function clearSuspenseBoundaryFromContainer(
   container: Container,
-  suspenseInstance: SuspenseInstance,
+  suspenseInstance: SuspenseInstance
 ): void {
   if (container.nodeType === COMMENT_NODE) {
     clearSuspenseBoundary((container.parentNode: any), suspenseInstance);
@@ -629,7 +617,7 @@ export function unhideInstance(instance: Instance, props: Props): void {
 
 export function unhideTextInstance(
   textInstance: TextInstance,
-  text: string,
+  text: string
 ): void {
   textInstance.nodeValue = text;
 }
@@ -654,7 +642,7 @@ export const supportsHydration = true;
 export function canHydrateInstance(
   instance: HydratableInstance,
   type: string,
-  props: Props,
+  props: Props
 ): null | Instance {
   if (
     instance.nodeType !== ELEMENT_NODE ||
@@ -668,7 +656,7 @@ export function canHydrateInstance(
 
 export function canHydrateTextInstance(
   instance: HydratableInstance,
-  text: string,
+  text: string
 ): null | TextInstance {
   if (text === '' || instance.nodeType !== TEXT_NODE) {
     // Empty strings are not parsed by HTML so there won't be a correct match here.
@@ -679,7 +667,7 @@ export function canHydrateTextInstance(
 }
 
 export function canHydrateSuspenseInstance(
-  instance: HydratableInstance,
+  instance: HydratableInstance
 ): null | SuspenseInstance {
   if (instance.nodeType !== COMMENT_NODE) {
     // Empty strings are not parsed by HTML so there won't be a correct match here.
@@ -699,7 +687,7 @@ export function isSuspenseInstanceFallback(instance: SuspenseInstance) {
 
 export function registerSuspenseInstanceRetry(
   instance: SuspenseInstance,
-  callback: () => void,
+  callback: () => void
 ) {
   instance._reactRetry = callback;
 }
@@ -728,13 +716,13 @@ function getNextHydratable(node) {
 }
 
 export function getNextHydratableSibling(
-  instance: HydratableInstance,
+  instance: HydratableInstance
 ): null | HydratableInstance {
   return getNextHydratable(instance.nextSibling);
 }
 
 export function getFirstHydratableChild(
-  parentInstance: Container | Instance,
+  parentInstance: Container | Instance
 ): null | HydratableInstance {
   return getNextHydratable(parentInstance.firstChild);
 }
@@ -745,7 +733,7 @@ export function hydrateInstance(
   props: Props,
   rootContainerInstance: Container,
   hostContext: HostContext,
-  internalInstanceHandle: Object,
+  internalInstanceHandle: Object
 ): null | Array<mixed> {
   precacheFiberNode(internalInstanceHandle, instance);
   // TODO: Possibly defer this until the commit phase where all the events
@@ -763,14 +751,14 @@ export function hydrateInstance(
     type,
     props,
     parentNamespace,
-    rootContainerInstance,
+    rootContainerInstance
   );
 }
 
 export function hydrateTextInstance(
   textInstance: TextInstance,
   text: string,
-  internalInstanceHandle: Object,
+  internalInstanceHandle: Object
 ): boolean {
   precacheFiberNode(internalInstanceHandle, textInstance);
   return diffHydratedText(textInstance, text);
@@ -778,13 +766,13 @@ export function hydrateTextInstance(
 
 export function hydrateSuspenseInstance(
   suspenseInstance: SuspenseInstance,
-  internalInstanceHandle: Object,
+  internalInstanceHandle: Object
 ) {
   precacheFiberNode(internalInstanceHandle, suspenseInstance);
 }
 
 export function getNextHydratableInstanceAfterSuspenseInstance(
-  suspenseInstance: SuspenseInstance,
+  suspenseInstance: SuspenseInstance
 ): null | HydratableInstance {
   let node = suspenseInstance.nextSibling;
   // Skip past all nodes within this suspense boundary.
@@ -818,7 +806,7 @@ export function getNextHydratableInstanceAfterSuspenseInstance(
 // SuspenseInstance. I.e. if its previous sibling is a Comment with
 // SUSPENSE_x_START_DATA. Otherwise, null.
 export function getParentSuspenseInstance(
-  targetInstance: Node,
+  targetInstance: Node
 ): null | SuspenseInstance {
   let node = targetInstance.previousSibling;
   // Skip past all nodes within this suspense boundary.
@@ -853,7 +841,7 @@ export function commitHydratedContainer(container: Container): void {
 }
 
 export function commitHydratedSuspenseInstance(
-  suspenseInstance: SuspenseInstance,
+  suspenseInstance: SuspenseInstance
 ): void {
   // Retry if any event replaying was blocked on this.
   retryIfBlockedOn(suspenseInstance);
@@ -862,7 +850,7 @@ export function commitHydratedSuspenseInstance(
 export function didNotMatchHydratedContainerTextInstance(
   parentContainer: Container,
   textInstance: TextInstance,
-  text: string,
+  text: string
 ) {
   if (__DEV__) {
     warnForUnmatchedText(textInstance, text);
@@ -874,7 +862,7 @@ export function didNotMatchHydratedTextInstance(
   parentProps: Props,
   parentInstance: Instance,
   textInstance: TextInstance,
-  text: string,
+  text: string
 ) {
   if (__DEV__ && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
     warnForUnmatchedText(textInstance, text);
@@ -883,7 +871,7 @@ export function didNotMatchHydratedTextInstance(
 
 export function didNotHydrateContainerInstance(
   parentContainer: Container,
-  instance: HydratableInstance,
+  instance: HydratableInstance
 ) {
   if (__DEV__) {
     if (instance.nodeType === ELEMENT_NODE) {
@@ -900,7 +888,7 @@ export function didNotHydrateInstance(
   parentType: string,
   parentProps: Props,
   parentInstance: Instance,
-  instance: HydratableInstance,
+  instance: HydratableInstance
 ) {
   if (__DEV__ && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
     if (instance.nodeType === ELEMENT_NODE) {
@@ -916,7 +904,7 @@ export function didNotHydrateInstance(
 export function didNotFindHydratableContainerInstance(
   parentContainer: Container,
   type: string,
-  props: Props,
+  props: Props
 ) {
   if (__DEV__) {
     warnForInsertedHydratedElement(parentContainer, type, props);
@@ -925,7 +913,7 @@ export function didNotFindHydratableContainerInstance(
 
 export function didNotFindHydratableContainerTextInstance(
   parentContainer: Container,
-  text: string,
+  text: string
 ) {
   if (__DEV__) {
     warnForInsertedHydratedText(parentContainer, text);
@@ -933,7 +921,7 @@ export function didNotFindHydratableContainerTextInstance(
 }
 
 export function didNotFindHydratableContainerSuspenseInstance(
-  parentContainer: Container,
+  parentContainer: Container
 ) {
   if (__DEV__) {
     // TODO: warnForInsertedHydratedSuspense(parentContainer);
@@ -945,7 +933,7 @@ export function didNotFindHydratableInstance(
   parentProps: Props,
   parentInstance: Instance,
   type: string,
-  props: Props,
+  props: Props
 ) {
   if (__DEV__ && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
     warnForInsertedHydratedElement(parentInstance, type, props);
@@ -956,7 +944,7 @@ export function didNotFindHydratableTextInstance(
   parentType: string,
   parentProps: Props,
   parentInstance: Instance,
-  text: string,
+  text: string
 ) {
   if (__DEV__ && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
     warnForInsertedHydratedText(parentInstance, text);
@@ -966,7 +954,7 @@ export function didNotFindHydratableTextInstance(
 export function didNotFindHydratableSuspenseInstance(
   parentType: string,
   parentProps: Props,
-  parentInstance: Instance,
+  parentInstance: Instance
 ) {
   if (__DEV__ && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
     // TODO: warnForInsertedHydratedSuspense(parentInstance);
@@ -974,7 +962,7 @@ export function didNotFindHydratableSuspenseInstance(
 }
 
 export function getFundamentalComponentInstance(
-  fundamentalInstance: ReactDOMFundamentalComponentInstance,
+  fundamentalInstance: ReactDOMFundamentalComponentInstance
 ): Instance {
   if (enableFundamentalAPI) {
     const {currentFiber, impl, props, state} = fundamentalInstance;
@@ -987,7 +975,7 @@ export function getFundamentalComponentInstance(
 }
 
 export function mountFundamentalComponent(
-  fundamentalInstance: ReactDOMFundamentalComponentInstance,
+  fundamentalInstance: ReactDOMFundamentalComponentInstance
 ): void {
   if (enableFundamentalAPI) {
     const {impl, instance, props, state} = fundamentalInstance;
@@ -999,7 +987,7 @@ export function mountFundamentalComponent(
 }
 
 export function shouldUpdateFundamentalComponent(
-  fundamentalInstance: ReactDOMFundamentalComponentInstance,
+  fundamentalInstance: ReactDOMFundamentalComponentInstance
 ): boolean {
   if (enableFundamentalAPI) {
     const {impl, prevProps, props, state} = fundamentalInstance;
@@ -1012,7 +1000,7 @@ export function shouldUpdateFundamentalComponent(
 }
 
 export function updateFundamentalComponent(
-  fundamentalInstance: ReactDOMFundamentalComponentInstance,
+  fundamentalInstance: ReactDOMFundamentalComponentInstance
 ): void {
   if (enableFundamentalAPI) {
     const {impl, instance, prevProps, props, state} = fundamentalInstance;
@@ -1024,7 +1012,7 @@ export function updateFundamentalComponent(
 }
 
 export function unmountFundamentalComponent(
-  fundamentalInstance: ReactDOMFundamentalComponentInstance,
+  fundamentalInstance: ReactDOMFundamentalComponentInstance
 ): void {
   if (enableFundamentalAPI) {
     const {impl, instance, props, state} = fundamentalInstance;
@@ -1040,6 +1028,7 @@ export function getInstanceFromNode(node: HTMLElement): null | Object {
 }
 
 let clientId: number = 0;
+
 export function makeClientId(): OpaqueIDType {
   return 'r:' + (clientId++).toString(36);
 }
@@ -1054,7 +1043,7 @@ export function makeClientIdInDEV(warnOnAccessInDEV: () => void): OpaqueIDType {
     valueOf() {
       warnOnAccessInDEV();
       return id;
-    },
+    }
   };
 }
 
@@ -1067,12 +1056,12 @@ export function isOpaqueHydratingObject(value: mixed): boolean {
 }
 
 export function makeOpaqueHydratingObject(
-  attemptToReadValue: () => void,
+  attemptToReadValue: () => void
 ): OpaqueIDType {
   return {
     $$typeof: REACT_OPAQUE_ID_TYPE,
     toString: attemptToReadValue,
-    valueOf: attemptToReadValue,
+    valueOf: attemptToReadValue
   };
 }
 
@@ -1082,7 +1071,7 @@ export function preparePortalMount(portalInstance: Instance): void {
 
 export function prepareScopeUpdate(
   scopeInstance: ReactScopeInstance,
-  internalInstanceHandle: Object,
+  internalInstanceHandle: Object
 ): void {
   if (enableScopeAPI) {
     precacheFiberNode(internalInstanceHandle, scopeInstance);
@@ -1090,7 +1079,7 @@ export function prepareScopeUpdate(
 }
 
 export function getInstanceFromScope(
-  scopeInstance: ReactScopeInstance,
+  scopeInstance: ReactScopeInstance
 ): null | Object {
   if (enableScopeAPI) {
     return getFiberFromScopeInstance(scopeInstance);
@@ -1119,7 +1108,7 @@ export function getBoundingRect(node: Instance): BoundingRect {
     x: rect.left,
     y: rect.top,
     width: rect.width,
-    height: rect.height,
+    height: rect.height
   };
 }
 
@@ -1185,7 +1174,7 @@ type RectRatio = {
 export function setupIntersectionObserver(
   targets: Array<Instance>,
   callback: ObserveVisibleRectsCallback,
-  options?: IntersectionObserverOptions,
+  options?: IntersectionObserverOptions
 ): {|
   disconnect: () => void,
   observe: (instance: Instance) => void,
@@ -1195,7 +1184,7 @@ export function setupIntersectionObserver(
   targets.forEach(target => {
     rectRatioCache.set(target, {
       rect: getBoundingRect(target),
-      ratio: 0,
+      ratio: 0
     });
   });
 
@@ -1207,9 +1196,9 @@ export function setupIntersectionObserver(
           x: boundingClientRect.left,
           y: boundingClientRect.top,
           width: boundingClientRect.width,
-          height: boundingClientRect.height,
+          height: boundingClientRect.height
         },
-        ratio: intersectionRatio,
+        ratio: intersectionRatio
       });
     });
 
@@ -1226,13 +1215,13 @@ export function setupIntersectionObserver(
     observe: target => {
       rectRatioCache.set(target, {
         rect: getBoundingRect(target),
-        ratio: 0,
+        ratio: 0
       });
       observer.observe((target: any));
     },
     unobserve: target => {
       rectRatioCache.delete(target);
       observer.unobserve((target: any));
-    },
+    }
   };
 }

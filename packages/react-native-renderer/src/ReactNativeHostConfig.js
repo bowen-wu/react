@@ -97,13 +97,7 @@ export function appendInitialChild(
   parentInstance._children.push(child);
 }
 
-export function createInstance(
-  type: string,
-  props: Props,
-  rootContainerInstance: Container,
-  hostContext: HostContext,
-  internalInstanceHandle: Object,
-): Instance {
+export function createInstance( type: string, props: Props, rootContainerInstance: Container, hostContext: HostContext, internalInstanceHandle: Object, ): Instance {
   const tag = allocateTag();
   const viewConfig = getViewConfigForType(type);
 

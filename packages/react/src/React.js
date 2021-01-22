@@ -77,17 +77,17 @@ const Children = {
 export {
   Component,
   PureComponent,
-
   createElement,
   cloneElement,
   isValidElement,
   // Deprecated behind disableCreateFactory
   createFactory,
 
+
   Children,
   createMutableSource,
-  createRef,
   createContext,
+  createRef,
   forwardRef,
   lazy,
   memo,

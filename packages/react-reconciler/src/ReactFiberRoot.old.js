@@ -7,25 +7,28 @@
  * @flow
  */
 
-import type {FiberRoot, SuspenseHydrationCallbacks} from './ReactInternalTypes';
-import type {RootTag} from './ReactRootTags';
+import type {
+  FiberRoot,
+  SuspenseHydrationCallbacks
+} from './ReactInternalTypes';
+import type { RootTag } from './ReactRootTags';
 
-import {noTimeout, supportsHydration} from './ReactFiberHostConfig';
-import {createHostRootFiber} from './ReactFiber.old';
+import { noTimeout, supportsHydration } from './ReactFiberHostConfig';
+import { createHostRootFiber } from './ReactFiber.old';
 import {
   NoLanes,
   NoLanePriority,
   NoTimestamp,
-  createLaneMap,
+  createLaneMap
 } from './ReactFiberLane.old';
 import {
   enableSchedulerTracing,
   enableSuspenseCallback,
-  enableCache,
+  enableCache
 } from 'shared/ReactFeatureFlags';
-import {unstable_getThreadID} from 'scheduler/tracing';
-import {initializeUpdateQueue} from './ReactUpdateQueue.old';
-import {LegacyRoot, BlockingRoot, ConcurrentRoot} from './ReactRootTags';
+import { unstable_getThreadID } from 'scheduler/tracing';
+import { initializeUpdateQueue } from './ReactUpdateQueue.old';
+import { LegacyRoot, BlockingRoot, ConcurrentRoot } from './ReactRootTags';
 
 function FiberRootNode(containerInfo, tag, hydrate) {
   this.tag = tag;
@@ -86,19 +89,13 @@ function FiberRootNode(containerInfo, tag, hydrate) {
   }
 }
 
-export function createFiberRoot(
-  containerInfo: any,
-  tag: RootTag,
-  hydrate: boolean,
-  hydrationCallbacks: null | SuspenseHydrationCallbacks,
-): FiberRoot {
+export function createFiberRoot(containerInfo: any, tag: RootTag, hydrate: boolean, hydrationCallbacks: null | SuspenseHydrationCallbacks): FiberRoot {
   const root: FiberRoot = (new FiberRootNode(containerInfo, tag, hydrate): any);
   if (enableSuspenseCallback) {
     root.hydrationCallbacks = hydrationCallbacks;
   }
 
-  // Cyclic construction. This cheats the type system right now because
-  // stateNode is any.
+  //
   const uninitializedFiber = createHostRootFiber(tag);
   root.current = uninitializedFiber;
   uninitializedFiber.stateNode = root;
@@ -108,12 +105,12 @@ export function createFiberRoot(
     root.pooledCache = initialCache;
     const initialState = {
       element: null,
-      cache: initialCache,
+      cache: initialCache
     };
     uninitializedFiber.memoizedState = initialState;
   } else {
     const initialState = {
-      element: null,
+      element: null
     };
     uninitializedFiber.memoizedState = initialState;
   }

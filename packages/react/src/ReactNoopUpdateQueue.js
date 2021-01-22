@@ -18,12 +18,12 @@ function warnNoop(publicInstance, callerName) {
       return;
     }
     console.error(
-      "Can't call %s on a component that is not yet mounted. " +
-        'This is a no-op, but it might indicate a bug in your application. ' +
-        'Instead, assign to `this.state` directly or define a `state = {};` ' +
-        'class property with the desired state in the %s component.',
+      'Can\'t call %s on a component that is not yet mounted. ' +
+      'This is a no-op, but it might indicate a bug in your application. ' +
+      'Instead, assign to `this.state` directly or define a `state = {};` ' +
+      'class property with the desired state in the %s component.',
       callerName,
-      componentName,
+      componentName
     );
     didWarnStateUpdateForUnmountedComponent[warningKey] = true;
   }
@@ -40,7 +40,7 @@ const ReactNoopUpdateQueue = {
    * @protected
    * @final
    */
-  isMounted: function(publicInstance) {
+  isMounted: function (publicInstance) {
     return false;
   },
 
@@ -59,7 +59,7 @@ const ReactNoopUpdateQueue = {
    * @param {?string} callerName name of the calling function in the public API.
    * @internal
    */
-  enqueueForceUpdate: function(publicInstance, callback, callerName) {
+  enqueueForceUpdate: function (publicInstance, callback, callerName) {
     warnNoop(publicInstance, 'forceUpdate');
   },
 
@@ -76,11 +76,11 @@ const ReactNoopUpdateQueue = {
    * @param {?string} callerName name of the calling function in the public API.
    * @internal
    */
-  enqueueReplaceState: function(
+  enqueueReplaceState: function (
     publicInstance,
     completeState,
     callback,
-    callerName,
+    callerName
   ) {
     warnNoop(publicInstance, 'replaceState');
   },
@@ -97,14 +97,9 @@ const ReactNoopUpdateQueue = {
    * @param {?string} Name of the calling function in the public API.
    * @internal
    */
-  enqueueSetState: function(
-    publicInstance,
-    partialState,
-    callback,
-    callerName,
-  ) {
+  enqueueSetState: function (publicInstance, partialState, callback, callerName) {
     warnNoop(publicInstance, 'setState');
-  },
+  }
 };
 
 export default ReactNoopUpdateQueue;

@@ -7,25 +7,25 @@
  * @flow
  */
 
-import type {DOMEventName} from './DOMEventNames';
+import type { DOMEventName } from './DOMEventNames';
 import {
   type EventSystemFlags,
   SHOULD_NOT_DEFER_CLICK_FOR_FB_SUPPORT_MODE,
   IS_LEGACY_FB_SUPPORT_MODE,
-  SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS,
+  SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS
 } from './EventSystemFlags';
-import type {AnyNativeEvent} from './PluginModuleType';
+import type { AnyNativeEvent } from './PluginModuleType';
 import type {
   KnownReactSyntheticEvent,
-  ReactSyntheticEvent,
+  ReactSyntheticEvent
 } from './ReactSyntheticEventType';
-import type {Fiber} from 'react-reconciler/src/ReactInternalTypes';
+import type { Fiber } from 'react-reconciler/src/ReactInternalTypes';
 
-import {allNativeEvents} from './EventRegistry';
+import { allNativeEvents } from './EventRegistry';
 import {
   IS_CAPTURE_PHASE,
   IS_EVENT_HANDLE_NON_MANAGED_NODE,
-  IS_NON_DELEGATED,
+  IS_NON_DELEGATED
 } from './EventSystemFlags';
 
 import {
@@ -33,37 +33,37 @@ import {
   HostPortal,
   HostComponent,
   HostText,
-  ScopeComponent,
+  ScopeComponent
 } from 'react-reconciler/src/ReactWorkTags';
 
 import getEventTarget from './getEventTarget';
 import {
   getClosestInstanceFromNode,
   getEventListenerSet,
-  getEventHandlerListeners,
+  getEventHandlerListeners
 } from '../client/ReactDOMComponentTree';
-import {COMMENT_NODE} from '../shared/HTMLNodeType';
-import {batchedEventUpdates} from './ReactDOMUpdateBatching';
+import { COMMENT_NODE } from '../shared/HTMLNodeType';
+import { batchedEventUpdates } from './ReactDOMUpdateBatching';
 import getListener from './getListener';
-import {passiveBrowserEventsSupported} from './checkPassiveEvents';
+import { passiveBrowserEventsSupported } from './checkPassiveEvents';
 
 import {
   enableLegacyFBSupport,
   enableCreateEventHandleAPI,
-  enableScopeAPI,
+  enableScopeAPI
 } from 'shared/ReactFeatureFlags';
 import {
   invokeGuardedCallbackAndCatchFirstError,
-  rethrowCaughtError,
+  rethrowCaughtError
 } from 'shared/ReactErrorUtils';
-import {DOCUMENT_NODE} from '../shared/HTMLNodeType';
-import {createEventListenerWrapperWithPriority} from './ReactDOMEventListener';
+import { DOCUMENT_NODE } from '../shared/HTMLNodeType';
+import { createEventListenerWrapperWithPriority } from './ReactDOMEventListener';
 import {
   removeEventListener,
   addEventCaptureListener,
   addEventBubbleListener,
   addEventBubbleListenerWithPassiveFlag,
-  addEventCaptureListenerWithPassiveFlag,
+  addEventCaptureListenerWithPassiveFlag
 } from './EventListener';
 import * as BeforeInputEventPlugin from './plugins/BeforeInputEventPlugin';
 import * as ChangeEventPlugin from './plugins/ChangeEventPlugin';
@@ -98,7 +98,7 @@ function extractEvents(
   nativeEvent: AnyNativeEvent,
   nativeEventTarget: null | EventTarget,
   eventSystemFlags: EventSystemFlags,
-  targetContainer: EventTarget,
+  targetContainer: EventTarget
 ) {
   // TODO: we should remove the concept of a "SimpleEventPlugin".
   // This is the basic functionality of the event system. All
@@ -113,7 +113,7 @@ function extractEvents(
     nativeEvent,
     nativeEventTarget,
     eventSystemFlags,
-    targetContainer,
+    targetContainer
   );
   const shouldProcessPolyfillPlugins =
     (eventSystemFlags & SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS) === 0;
@@ -142,7 +142,7 @@ function extractEvents(
       nativeEvent,
       nativeEventTarget,
       eventSystemFlags,
-      targetContainer,
+      targetContainer
     );
     ChangeEventPlugin.extractEvents(
       dispatchQueue,
@@ -151,7 +151,7 @@ function extractEvents(
       nativeEvent,
       nativeEventTarget,
       eventSystemFlags,
-      targetContainer,
+      targetContainer
     );
     SelectEventPlugin.extractEvents(
       dispatchQueue,
@@ -160,7 +160,7 @@ function extractEvents(
       nativeEvent,
       nativeEventTarget,
       eventSystemFlags,
-      targetContainer,
+      targetContainer
     );
     BeforeInputEventPlugin.extractEvents(
       dispatchQueue,
@@ -169,7 +169,7 @@ function extractEvents(
       nativeEvent,
       nativeEventTarget,
       eventSystemFlags,
-      targetContainer,
+      targetContainer
     );
   }
 }
@@ -198,7 +198,7 @@ export const mediaEventTypes: Array<DOMEventName> = [
   'suspend',
   'timeupdate',
   'volumechange',
-  'waiting',
+  'waiting'
 ];
 
 // We should not delegate these events to the container, but rather
@@ -215,13 +215,13 @@ export const nonDelegatedEvents: Set<DOMEventName> = new Set([
   // into this Set. Note: the "error" event isn't an exclusive media event,
   // and can occur on other elements too. Rather than duplicate that event,
   // we just take it from the media events array.
-  ...mediaEventTypes,
+  ...mediaEventTypes
 ]);
 
 function executeDispatch(
   event: ReactSyntheticEvent,
   listener: Function,
-  currentTarget: EventTarget,
+  currentTarget: EventTarget
 ): void {
   const type = event.type || 'unknown-event';
   event.currentTarget = currentTarget;
@@ -232,7 +232,7 @@ function executeDispatch(
 function processDispatchQueueItemsInOrder(
   event: ReactSyntheticEvent,
   dispatchListeners: Array<DispatchListener>,
-  inCapturePhase: boolean,
+  inCapturePhase: boolean
 ): void {
   let previousInstance;
   if (inCapturePhase) {
@@ -256,10 +256,7 @@ function processDispatchQueueItemsInOrder(
   }
 }
 
-export function processDispatchQueue(
-  dispatchQueue: DispatchQueue,
-  eventSystemFlags: EventSystemFlags,
-): void {
+export function processDispatchQueue(dispatchQueue: DispatchQueue, eventSystemFlags: EventSystemFlags): void {
   const inCapturePhase = (eventSystemFlags & IS_CAPTURE_PHASE) !== 0;
   for (let i = 0; i < dispatchQueue.length; i++) {
     const {event, listeners} = dispatchQueue[i];
@@ -275,7 +272,7 @@ function dispatchEventsForPlugins(
   eventSystemFlags: EventSystemFlags,
   nativeEvent: AnyNativeEvent,
   targetInst: null | Fiber,
-  targetContainer: EventTarget,
+  targetContainer: EventTarget
 ): void {
   const nativeEventTarget = getEventTarget(nativeEvent);
   const dispatchQueue: DispatchQueue = [];
@@ -286,21 +283,21 @@ function dispatchEventsForPlugins(
     nativeEvent,
     nativeEventTarget,
     eventSystemFlags,
-    targetContainer,
+    targetContainer
   );
   processDispatchQueue(dispatchQueue, eventSystemFlags);
 }
 
 export function listenToNonDelegatedEvent(
   domEventName: DOMEventName,
-  targetElement: Element,
+  targetElement: Element
 ): void {
   if (__DEV__) {
     if (!nonDelegatedEvents.has(domEventName)) {
       console.error(
         'Did not expect a listenToNonDelegatedEvent() call for "%s". ' +
-          'This is a bug in React. Please file an issue.',
-        domEventName,
+        'This is a bug in React. Please file an issue.',
+        domEventName
       );
     }
   }
@@ -308,14 +305,14 @@ export function listenToNonDelegatedEvent(
   const listenerSet = getEventListenerSet(targetElement);
   const listenerSetKey = getListenerSetKey(
     domEventName,
-    isCapturePhaseListener,
+    isCapturePhaseListener
   );
   if (!listenerSet.has(listenerSetKey)) {
     addTrappedEventListener(
       targetElement,
       domEventName,
       IS_NON_DELEGATED,
-      isCapturePhaseListener,
+      isCapturePhaseListener
     );
     listenerSet.add(listenerSetKey);
   }
@@ -324,14 +321,14 @@ export function listenToNonDelegatedEvent(
 export function listenToNativeEvent(
   domEventName: DOMEventName,
   isCapturePhaseListener: boolean,
-  target: EventTarget,
+  target: EventTarget
 ): void {
   if (__DEV__) {
     if (nonDelegatedEvents.has(domEventName) && !isCapturePhaseListener) {
       console.error(
         'Did not expect a listenToNativeEvent() call for "%s" in the bubble phase. ' +
-          'This is a bug in React. Please file an issue.',
-        domEventName,
+        'This is a bug in React. Please file an issue.',
+        domEventName
       );
     }
   }
@@ -344,7 +341,7 @@ export function listenToNativeEvent(
     target,
     domEventName,
     eventSystemFlags,
-    isCapturePhaseListener,
+    isCapturePhaseListener
   );
 }
 
@@ -353,13 +350,13 @@ export function listenToNativeEvent(
 export function listenToNativeEventForNonManagedEventTarget(
   domEventName: DOMEventName,
   isCapturePhaseListener: boolean,
-  target: EventTarget,
+  target: EventTarget
 ): void {
   let eventSystemFlags = IS_EVENT_HANDLE_NON_MANAGED_NODE;
   const listenerSet = getEventListenerSet(target);
   const listenerSetKey = getListenerSetKey(
     domEventName,
-    isCapturePhaseListener,
+    isCapturePhaseListener
   );
   if (!listenerSet.has(listenerSetKey)) {
     if (isCapturePhaseListener) {
@@ -369,7 +366,7 @@ export function listenToNativeEventForNonManagedEventTarget(
       target,
       domEventName,
       eventSystemFlags,
-      isCapturePhaseListener,
+      isCapturePhaseListener
     );
     listenerSet.add(listenerSetKey);
   }
@@ -394,10 +391,7 @@ export function listenToAllSupportedEvents(rootContainerElement: EventTarget) {
         listenToNativeEvent(domEventName, true, rootContainerElement);
       }
     });
-    const ownerDocument =
-      (rootContainerElement: any).nodeType === DOCUMENT_NODE
-        ? rootContainerElement
-        : (rootContainerElement: any).ownerDocument;
+    const ownerDocument = (rootContainerElement: any).nodeType === DOCUMENT_NODE ? rootContainerElement : (rootContainerElement: any).ownerDocument;
     if (ownerDocument !== null) {
       // The selectionchange event also needs deduplication
       // but it is attached to the document.
@@ -414,12 +408,12 @@ function addTrappedEventListener(
   domEventName: DOMEventName,
   eventSystemFlags: EventSystemFlags,
   isCapturePhaseListener: boolean,
-  isDeferredListenerForLegacyFBSupport?: boolean,
+  isDeferredListenerForLegacyFBSupport?: boolean
 ) {
   let listener = createEventListenerWrapperWithPriority(
     targetContainer,
     domEventName,
-    eventSystemFlags,
+    eventSystemFlags
   );
   // If passive option is not supported, then the event will be
   // active and not passive.
@@ -459,12 +453,12 @@ function addTrappedEventListener(
   // need support for such browsers.
   if (enableLegacyFBSupport && isDeferredListenerForLegacyFBSupport) {
     const originalListener = listener;
-    listener = function(...p) {
+    listener = function (...p) {
       removeEventListener(
         targetContainer,
         domEventName,
         unsubscribeListener,
-        isCapturePhaseListener,
+        isCapturePhaseListener
       );
       return originalListener.apply(this, p);
     };
@@ -476,13 +470,13 @@ function addTrappedEventListener(
         targetContainer,
         domEventName,
         listener,
-        isPassiveListener,
+        isPassiveListener
       );
     } else {
       unsubscribeListener = addEventCaptureListener(
         targetContainer,
         domEventName,
-        listener,
+        listener
       );
     }
   } else {
@@ -491,13 +485,13 @@ function addTrappedEventListener(
         targetContainer,
         domEventName,
         listener,
-        isPassiveListener,
+        isPassiveListener
       );
     } else {
       unsubscribeListener = addEventBubbleListener(
         targetContainer,
         domEventName,
-        listener,
+        listener
       );
     }
   }
@@ -505,7 +499,7 @@ function addTrappedEventListener(
 
 function deferClickToDocumentForLegacyFBSupport(
   domEventName: DOMEventName,
-  targetContainer: EventTarget,
+  targetContainer: EventTarget
 ): void {
   // We defer all click events with legacy FB support mode on.
   // This means we add a one time event listener to trigger
@@ -516,13 +510,13 @@ function deferClickToDocumentForLegacyFBSupport(
     domEventName,
     IS_LEGACY_FB_SUPPORT_MODE,
     false,
-    isDeferredListenerForLegacyFBSupport,
+    isDeferredListenerForLegacyFBSupport
   );
 }
 
 function isMatchingRootContainer(
   grandContainer: Element,
-  targetContainer: EventTarget,
+  targetContainer: EventTarget
 ): boolean {
   return (
     grandContainer === targetContainer ||
@@ -536,7 +530,7 @@ export function dispatchEventForPluginEventSystem(
   eventSystemFlags: EventSystemFlags,
   nativeEvent: AnyNativeEvent,
   targetInst: null | Fiber,
-  targetContainer: EventTarget,
+  targetContainer: EventTarget
 ): void {
   let ancestorInst = targetInst;
   if (
@@ -636,20 +630,20 @@ export function dispatchEventForPluginEventSystem(
       eventSystemFlags,
       nativeEvent,
       ancestorInst,
-      targetContainer,
-    ),
+      targetContainer
+    )
   );
 }
 
 function createDispatchListener(
   instance: null | Fiber,
   listener: Function,
-  currentTarget: EventTarget,
+  currentTarget: EventTarget
 ): DispatchListener {
   return {
     instance,
     listener,
-    currentTarget,
+    currentTarget
   };
 }
 
@@ -659,7 +653,7 @@ export function accumulateSinglePhaseListeners(
   nativeEventType: string,
   inCapturePhase: boolean,
   accumulateTargetOnly: boolean,
-  nativeEvent: AnyNativeEvent,
+  nativeEvent: AnyNativeEvent
 ): Array<DispatchListener> {
   const captureName = reactName !== null ? reactName + 'Capture' : null;
   const reactEventName = inCapturePhase ? captureName : reactName;
@@ -678,7 +672,7 @@ export function accumulateSinglePhaseListeners(
       // createEventHandle listeners
       if (enableCreateEventHandleAPI) {
         const eventHandlerListeners = getEventHandlerListeners(
-          lastHostComponent,
+          lastHostComponent
         );
         if (eventHandlerListeners !== null) {
           eventHandlerListeners.forEach(entry => {
@@ -690,8 +684,8 @@ export function accumulateSinglePhaseListeners(
                 createDispatchListener(
                   instance,
                   entry.callback,
-                  (lastHostComponent: any),
-                ),
+                  (lastHostComponent: any)
+                )
               );
             }
           });
@@ -703,7 +697,7 @@ export function accumulateSinglePhaseListeners(
         const listener = getListener(instance, reactEventName);
         if (listener != null) {
           listeners.push(
-            createDispatchListener(instance, listener, lastHostComponent),
+            createDispatchListener(instance, listener, lastHostComponent)
           );
         }
       }
@@ -717,7 +711,7 @@ export function accumulateSinglePhaseListeners(
       // Scopes
       const reactScopeInstance = stateNode;
       const eventHandlerListeners = getEventHandlerListeners(
-        reactScopeInstance,
+        reactScopeInstance
       );
       if (eventHandlerListeners !== null) {
         eventHandlerListeners.forEach(entry => {
@@ -729,8 +723,8 @@ export function accumulateSinglePhaseListeners(
               createDispatchListener(
                 instance,
                 entry.callback,
-                (lastHostComponent: any),
-              ),
+                (lastHostComponent: any)
+              )
             );
           }
         });
@@ -773,7 +767,7 @@ export function accumulateSinglePhaseListeners(
 // phase event listeners (via emulation).
 export function accumulateTwoPhaseListeners(
   targetFiber: Fiber | null,
-  reactName: string,
+  reactName: string
 ): Array<DispatchListener> {
   const captureName = reactName + 'Capture';
   const listeners: Array<DispatchListener> = [];
@@ -788,13 +782,13 @@ export function accumulateTwoPhaseListeners(
       const captureListener = getListener(instance, captureName);
       if (captureListener != null) {
         listeners.unshift(
-          createDispatchListener(instance, captureListener, currentTarget),
+          createDispatchListener(instance, captureListener, currentTarget)
         );
       }
       const bubbleListener = getListener(instance, reactName);
       if (bubbleListener != null) {
         listeners.push(
-          createDispatchListener(instance, bubbleListener, currentTarget),
+          createDispatchListener(instance, bubbleListener, currentTarget)
         );
       }
     }
@@ -866,7 +860,7 @@ function accumulateEnterLeaveListenersForEvent(
   event: KnownReactSyntheticEvent,
   target: Fiber,
   common: Fiber | null,
-  inCapturePhase: boolean,
+  inCapturePhase: boolean
 ): void {
   const registrationName = event._reactName;
   const listeners: Array<DispatchListener> = [];
@@ -886,14 +880,14 @@ function accumulateEnterLeaveListenersForEvent(
         const captureListener = getListener(instance, registrationName);
         if (captureListener != null) {
           listeners.unshift(
-            createDispatchListener(instance, captureListener, currentTarget),
+            createDispatchListener(instance, captureListener, currentTarget)
           );
         }
       } else if (!inCapturePhase) {
         const bubbleListener = getListener(instance, registrationName);
         if (bubbleListener != null) {
           listeners.push(
-            createDispatchListener(instance, bubbleListener, currentTarget),
+            createDispatchListener(instance, bubbleListener, currentTarget)
           );
         }
       }
@@ -915,7 +909,7 @@ export function accumulateEnterLeaveTwoPhaseListeners(
   leaveEvent: KnownReactSyntheticEvent,
   enterEvent: null | KnownReactSyntheticEvent,
   from: Fiber | null,
-  to: Fiber | null,
+  to: Fiber | null
 ): void {
   const common = from && to ? getLowestCommonAncestor(from, to) : null;
 
@@ -925,7 +919,7 @@ export function accumulateEnterLeaveTwoPhaseListeners(
       leaveEvent,
       from,
       common,
-      false,
+      false
     );
   }
   if (to !== null && enterEvent !== null) {
@@ -934,7 +928,7 @@ export function accumulateEnterLeaveTwoPhaseListeners(
       enterEvent,
       to,
       common,
-      true,
+      true
     );
   }
 }
@@ -942,7 +936,7 @@ export function accumulateEnterLeaveTwoPhaseListeners(
 export function accumulateEventHandleNonManagedNodeListeners(
   reactEventType: DOMEventName,
   currentTarget: EventTarget,
-  inCapturePhase: boolean,
+  inCapturePhase: boolean
 ): Array<DispatchListener> {
   const listeners: Array<DispatchListener> = [];
 
@@ -951,7 +945,7 @@ export function accumulateEventHandleNonManagedNodeListeners(
     eventListeners.forEach(entry => {
       if (entry.type === reactEventType && entry.capture === inCapturePhase) {
         listeners.push(
-          createDispatchListener(null, entry.callback, currentTarget),
+          createDispatchListener(null, entry.callback, currentTarget)
         );
       }
     });
@@ -961,7 +955,7 @@ export function accumulateEventHandleNonManagedNodeListeners(
 
 export function getListenerSetKey(
   domEventName: DOMEventName,
-  capture: boolean,
+  capture: boolean
 ): string {
   return `${domEventName}__${capture ? 'capture' : 'bubble'}`;
 }

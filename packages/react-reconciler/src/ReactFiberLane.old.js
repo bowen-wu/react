@@ -7,7 +7,7 @@
  * @flow
  */
 
-import type {FiberRoot, ReactPriorityLevel} from './ReactInternalTypes';
+import type { FiberRoot, ReactPriorityLevel } from './ReactInternalTypes';
 
 // TODO: Ideally these types would be opaque but that doesn't work well with
 // our reconciler fork infra, since these leak into non-reconciler packages.
@@ -36,7 +36,7 @@ export type Lane = number;
 export type LaneMap<T> = Array<T>;
 
 import invariant from 'shared/invariant';
-import {enableCache} from 'shared/ReactFeatureFlags';
+import { enableCache } from 'shared/ReactFeatureFlags';
 
 import {
   ImmediatePriority as ImmediateSchedulerPriority,
@@ -44,7 +44,7 @@ import {
   NormalPriority as NormalSchedulerPriority,
   LowPriority as LowSchedulerPriority,
   IdlePriority as IdleSchedulerPriority,
-  NoPriority as NoSchedulerPriority,
+  NoPriority as NoSchedulerPriority
 } from './SchedulerWithReactIntegration.old';
 
 export const SyncLanePriority: LanePriority = 15;
@@ -198,7 +198,7 @@ function getHighestPriorityLanes(lanes: Lanes | Lane): Lanes {
 }
 
 export function schedulerPriorityToLanePriority(
-  schedulerPriorityLevel: ReactPriorityLevel,
+  schedulerPriorityLevel: ReactPriorityLevel
 ): LanePriority {
   switch (schedulerPriorityLevel) {
     case ImmediateSchedulerPriority:
@@ -217,7 +217,7 @@ export function schedulerPriorityToLanePriority(
 }
 
 export function lanePriorityToSchedulerPriority(
-  lanePriority: LanePriority,
+  lanePriority: LanePriority
 ): ReactPriorityLevel {
   switch (lanePriority) {
     case SyncLanePriority:
@@ -245,7 +245,7 @@ export function lanePriorityToSchedulerPriority(
       invariant(
         false,
         'Invalid update priority: %s. This is a bug in React.',
-        lanePriority,
+        lanePriority
       );
   }
 }
@@ -413,7 +413,7 @@ function computeExpirationTime(lane: Lane, currentTime: number) {
 
 export function markStarvedLanesAsExpired(
   root: FiberRoot,
-  currentTime: number,
+  currentTime: number
 ): void {
   // TODO: This gets called every time we yield. We can optimize by storing
   // the earliest expiration time on the root. Then use that to quickly bail out
@@ -473,12 +473,15 @@ export function getLanesToRetrySynchronouslyOnError(root: FiberRoot): Lanes {
 export function returnNextLanesPriority() {
   return return_highestLanePriority;
 }
+
 export function includesNonIdleWork(lanes: Lanes) {
   return (lanes & NonIdleLanes) !== NoLanes;
 }
+
 export function includesOnlyRetries(lanes: Lanes) {
   return (lanes & RetryLanes) === lanes;
 }
+
 export function includesOnlyTransitions(lanes: Lanes) {
   return (lanes & TransitionLanes) === lanes;
 }
@@ -487,7 +490,7 @@ export function includesOnlyTransitions(lanes: Lanes) {
 // be a pure function, so that it always returns the same lane for given inputs.
 export function findUpdateLane(
   lanePriority: LanePriority,
-  wipLanes: Lanes,
+  wipLanes: Lanes
 ): Lane {
   switch (lanePriority) {
     case NoLanePriority:
@@ -543,7 +546,7 @@ export function findUpdateLane(
   invariant(
     false,
     'Invalid update priority: %s. This is a bug in React.',
-    lanePriority,
+    lanePriority
   );
 }
 
@@ -638,7 +641,7 @@ export function higherPriorityLane(a: Lane, b: Lane) {
 
 export function higherLanePriority(
   a: LanePriority,
-  b: LanePriority,
+  b: LanePriority
 ): LanePriority {
   return a !== NoLanePriority && a > b ? a : b;
 }
@@ -653,11 +656,7 @@ export function createLaneMap<T>(initial: T): LaneMap<T> {
   return laneMap;
 }
 
-export function markRootUpdated(
-  root: FiberRoot,
-  updateLane: Lane,
-  eventTime: number,
-) {
+export function markRootUpdated(root: FiberRoot, updateLane: Lane, eventTime: number) {
   root.pendingLanes |= updateLane;
 
   // TODO: Theoretically, any update to any lane can unblock any other lane. But
@@ -703,7 +702,7 @@ export function markRootSuspended(root: FiberRoot, suspendedLanes: Lanes) {
 export function markRootPinged(
   root: FiberRoot,
   pingedLanes: Lanes,
-  eventTime: number,
+  eventTime: number
 ) {
   root.pingedLanes |= root.suspendedLanes & pingedLanes;
 }
@@ -782,7 +781,7 @@ export function markRootEntangled(root: FiberRoot, entangledLanes: Lanes) {
 
 export function getBumpedLaneForHydration(
   root: FiberRoot,
-  renderLanes: Lanes,
+  renderLanes: Lanes
 ): Lane {
   getHighestPriorityLanes(renderLanes);
   const highestLanePriority = return_highestLanePriority;
@@ -847,6 +846,7 @@ const clz32 = Math.clz32 ? Math.clz32 : clz32Fallback;
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/clz32
 const log = Math.log;
 const LN2 = Math.LN2;
+
 function clz32Fallback(lanes: Lanes | Lane) {
   if (lanes === 0) {
     return 32;

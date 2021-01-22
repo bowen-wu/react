@@ -265,6 +265,7 @@ function unstable_runWithPriority(priorityLevel, eventHandler) {
   var previousPriorityLevel = currentPriorityLevel;
   currentPriorityLevel = priorityLevel;
 
+  debugger;
   try {
     return eventHandler();
   } finally {
